@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+  </head>
+  <body>
+    <style>
+      .cm-line-decorator {
+        display: inline-block;
+        width: 100%;
+        height: 1em;
+      }
+
+      .cm-line-decorator * {
+        vertical-align: middle;
+      }
+
+      .cm-line-decorator__icon-wrapper {
+        height: 1em;
+        color: #afafaf;
+      }
+
+      .cm-line-decorator__split-line {
+        display: inline-block;
+        background-color: #afafaf;
+        width: calc(100% - 36px);
+        margin-left: 20px;
+        height: 1px;
+      }
+
+      .cm-line-decorator__split-line-end {
+        display: inline-block;
+        background-color: #afafaf;
+        width: calc(100% - 36px);
+        margin-left: 36px;
+        height: 1px;
+      }
+    </style>
+    <div id="editor-wrapper"></div>
+    <script type="module">
+      import {setupEditor, getEditorValue, setEditorValue, getEditorSelection, getEditorCursorPosition} from '/src/main.ts';
+      window.wvCodemirror6 = {};
+      window.wvCodemirror6.setupEditor = setupEditor;
+      window.wvCodemirror6.getEditorValue = getEditorValue;
+      window.wvCodemirror6.setEditorValue = setEditorValue;
+      window.wvCodemirror6.getEditorSelection = getEditorSelection;
+      window.wvCodemirror6.getEditorCursorPosition = getEditorCursorPosition;
+
+      setupEditor("#editor-wrapper");
+    </script> 
+  </body>
+</html>
