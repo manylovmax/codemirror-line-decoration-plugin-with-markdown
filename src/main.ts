@@ -188,7 +188,7 @@ const onNewLineInput = EditorView.updateListener.of(function(viewUpdate) {
                 break;
               }
             }
-            if (emptyLinesCounter == 2) {
+            if (emptyLinesCounter >= 2) {
               let newEditorValueSplit = [...editorValueSplit];
               newEditorValueSplit.splice(curentLine - 1, 0, TEXT_SEPARATORS.user);
               const newEditorValue = getFormattedText(newEditorValueSplit.join('\n'));
