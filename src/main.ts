@@ -128,6 +128,37 @@ const lineEndDecoratorPlugin = ViewPlugin.fromClass(class {
     })
 });
 
+export function getFormattedText(textToParse) {
+  // добавление тега user
+  let resultText = '';
+  let splitTextToParse = textToParse.split('\n');
+  if (splitTextToParse[0] != TEXT_SEPARATORS.user && splitTextToParse[0] != TEXT_SEPARATORS.assistant) {
+      resultText += TEXT_SEPARATORS.user + '\n';// tag user
+  }
+  resultText += textToParse;
+  // уборка дублирующих тегов (слитие нескольких смежных сообщений одного типа в одно)
+  splitTextToParse = resultText.split('\n');
+  let currentTag = '';
+  resultText = '';
+  for (let i=0; i<splitTextToParse.length; i++) {
+      if (splitTextToParse[i] == TEXT_SEPARATORS.user) {
+          if (currentTag == TEXT_SEPARATORS.user) {
+              continue;
+          }
+          currentTag = splitTextToParse[i];
+      }
+      if (splitTextToParse[i] == TEXT_SEPARATORS.assistant) {
+          if (currentTag == TEXT_SEPARATORS.assistant) {
+              continue;
+          }
+          currentTag = splitTextToParse[i];
+      }
+      resultText += splitTextToParse[i] + '\n';
+  }
+
+  return resultText;
+}
+
 const onNewLineInput = EditorView.updateListener.of(function(viewUpdate) {
   if (viewUpdate.docChanged) {
       // console.log(viewUpdate);
@@ -160,7 +191,8 @@ const onNewLineInput = EditorView.updateListener.of(function(viewUpdate) {
             if (emptyLinesCounter == 2) {
               let newEditorValueSplit = [...editorValueSplit];
               newEditorValueSplit.splice(curentLine - 1, 0, TEXT_SEPARATORS.user);
-              let transaction = viewUpdate.state.update({changes: {from: 0, to: viewUpdate.state.doc.length, insert: newEditorValueSplit.join('\n')}});
+              const newEditorValue = getFormattedText(newEditorValueSplit.join('\n'));
+              let transaction = viewUpdate.state.update({changes: {from: 0, to: viewUpdate.state.doc.length, insert: newEditorValue}});
               viewUpdate.view.dispatch(transaction);
             }
           }
