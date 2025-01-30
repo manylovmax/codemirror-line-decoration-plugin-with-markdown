@@ -153,7 +153,10 @@ export function getFormattedText(textToParse) {
           }
           currentTag = splitTextToParse[i];
       }
-      resultText += splitTextToParse[i] + '\n';
+      resultText += splitTextToParse[i];
+      if (i != splitTextToParse.length - 1) {
+        resultText += '\n';
+      }
   }
 
   return resultText;
@@ -169,11 +172,11 @@ const onNewLineInput = EditorView.updateListener.of(function(viewUpdate) {
           viewUpdate.changes.inserted[1].text[1] == ''
         ) {
           // console.log("Enter key has been hit");
-          const curentLine = viewUpdate.state.doc.lineAt(viewUpdate.state.selection.main.from).number - 1;
-          // console.log("curentLine", curentLine);
+          const currentLine = viewUpdate.state.doc.lineAt(viewUpdate.state.selection.main.from).number - 1;
+          // console.log("currentLine", currentLine);
           const editorValueSplit = viewUpdate.state.doc.text;
           let sectionMarker = '';
-          for (let i = curentLine - 1; i >= 0; i--) {
+          for (let i = currentLine - 1; i >= 0; i--) {
             if (sectionMarker == '' && (editorValueSplit[i] == TEXT_SEPARATORS.user || editorValueSplit[i] == TEXT_SEPARATORS.assistant)){
               sectionMarker = editorValueSplit[i];
               break;
@@ -181,7 +184,7 @@ const onNewLineInput = EditorView.updateListener.of(function(viewUpdate) {
           }
           let emptyLinesCounter = 0;
           if (sectionMarker == TEXT_SEPARATORS.assistant) {
-            for (let i = curentLine - 1; i >= 0; i--) {
+            for (let i = currentLine - 1; i >= 0; i--) {
               if (editorValueSplit[i].trim() == ''){
                 emptyLinesCounter++;
               } else {
@@ -190,7 +193,7 @@ const onNewLineInput = EditorView.updateListener.of(function(viewUpdate) {
             }
             if (emptyLinesCounter >= 2) {
               let newEditorValueSplit = [...editorValueSplit];
-              newEditorValueSplit.splice(curentLine - 1, 0, TEXT_SEPARATORS.user);
+              newEditorValueSplit.splice(currentLine, 0, TEXT_SEPARATORS.user);
               const newEditorValue = getFormattedText(newEditorValueSplit.join('\n'));
               let transaction = viewUpdate.state.update({changes: {from: 0, to: viewUpdate.state.doc.length, insert: newEditorValue}});
               viewUpdate.view.dispatch(transaction);
