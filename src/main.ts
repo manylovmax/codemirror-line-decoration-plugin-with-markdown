@@ -128,38 +128,35 @@ const lineEndDecoratorPlugin = ViewPlugin.fromClass(class {
     })
 });
 
-export function getFormattedText(textToParse) {
+export function getFormattedText(textToParse: string) {
   // добавление тега user
-  let resultText = '';
-  let splitTextToParse = textToParse.split('\n');
-  if (splitTextToParse[0] != TEXT_SEPARATORS.user && splitTextToParse[0] != TEXT_SEPARATORS.assistant) {
-      resultText += TEXT_SEPARATORS.user + '\n';// tag user
+  let resultTextSplit: string[] = [];
+  let textToParseSplit: string[] = textToParse.split('\n');
+  if (textToParseSplit[0] != TEXT_SEPARATORS.user && textToParseSplit[0] != TEXT_SEPARATORS.assistant) {
+    resultTextSplit.push(TEXT_SEPARATORS.user);// tag user
   }
-  resultText += textToParse;
+  resultTextSplit = resultTextSplit.concat(textToParseSplit);
   // уборка дублирующих тегов (слитие нескольких смежных сообщений одного типа в одно)
-  splitTextToParse = resultText.split('\n');
-  let currentTag = '';
-  resultText = '';
-  for (let i=0; i<splitTextToParse.length; i++) {
-      if (splitTextToParse[i] == TEXT_SEPARATORS.user) {
+  textToParseSplit = resultTextSplit;
+  let currentTag: string = '';
+  resultTextSplit = [];
+  for (let i = 0; i < textToParseSplit.length; i++) {
+      if (textToParseSplit[i] == TEXT_SEPARATORS.user) {
           if (currentTag == TEXT_SEPARATORS.user) {
               continue;
           }
-          currentTag = splitTextToParse[i];
+          currentTag = textToParseSplit[i];
       }
-      if (splitTextToParse[i] == TEXT_SEPARATORS.assistant) {
+      if (textToParseSplit[i] == TEXT_SEPARATORS.assistant) {
           if (currentTag == TEXT_SEPARATORS.assistant) {
               continue;
           }
-          currentTag = splitTextToParse[i];
+          currentTag = textToParseSplit[i];
       }
-      resultText += splitTextToParse[i];
-      if (i != splitTextToParse.length - 1) {
-        resultText += '\n';
-      }
+      resultTextSplit.push(textToParseSplit[i]);
   }
 
-  return resultText;
+  return resultTextSplit.join('\n');
 }
 
 const onNewLineInput = EditorView.updateListener.of(function(viewUpdate) {
