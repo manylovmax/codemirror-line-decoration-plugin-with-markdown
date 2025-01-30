@@ -124,6 +124,47 @@ const lineEndDecoratorPlugin = ViewPlugin.fromClass(class {
     })
 });
 
+const onNewLineInput = EditorView.updateListener.of(function(viewUpdate) {
+  if (viewUpdate.docChanged) {
+      // console.log(viewUpdate);
+      if (viewUpdate.changes.inserted.length == 2) {
+        if (
+          viewUpdate.changes.inserted[1].lines == 2 && 
+          viewUpdate.changes.inserted[1].text[0] == '' &&
+          viewUpdate.changes.inserted[1].text[1] == ''
+        ) {
+          // console.log("Enter key has been hit");
+          const curentLine = viewUpdate.state.doc.lineAt(viewUpdate.state.selection.main.from).number - 1;
+          // console.log("curentLine", curentLine);
+          const editorValueSplit = viewUpdate.state.doc.text;
+          let sectionMarker = '';
+          for (let i = curentLine - 1; i >= 0; i--) {
+            if (sectionMarker == '' && (editorValueSplit[i] == '__1' || editorValueSplit[i] == '__2')){
+              sectionMarker = editorValueSplit[i];
+              break;
+            }
+          }
+          let emptyLinesCounter = 0;
+          if (sectionMarker == '__2') {
+            for (let i = curentLine - 1; i >= 0; i--) {
+              if (editorValueSplit[i].trim() == ''){
+                emptyLinesCounter++;
+              } else {
+                break;
+              }
+            }
+            if (emptyLinesCounter == 2) {
+              let newEditorValueSplit = [...editorValueSplit];
+              newEditorValueSplit.splice(curentLine - 1, 0, '__1');
+              let transaction = viewUpdate.state.update({changes: {from: 0, to: viewUpdate.state.doc.length, insert: newEditorValueSplit.join('\n')}});
+              viewUpdate.view.dispatch(transaction);
+            }
+          }
+        }
+      }
+  } 
+});
+
 export function setupEditor(selector) {
   const state = EditorState.create({
     // doc: "__1\nприведи текст к верхнему регистру\n__2\nPELL\n___",
@@ -145,6 +186,7 @@ export function setupEditor(selector) {
       lineTaskDecoratorPlugin, 
       lineAnswerDecoratorPlugin, 
       lineEndDecoratorPlugin,
+      onNewLineInput
     ],
   });
 
