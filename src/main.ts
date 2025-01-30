@@ -12,6 +12,10 @@ import config from './codemirror-rich-markdoc/example/markdoc';
 // @ts-expect-error
 // import doc from './codemirror-rich-markdoc/example/example.md?raw';
 
+const TEXT_SEPARATORS = {
+  user: '__1',
+  assistant: '__2',
+}
 
 class lineAnswerWidget extends WidgetType {
   toDOM() {
@@ -139,13 +143,13 @@ const onNewLineInput = EditorView.updateListener.of(function(viewUpdate) {
           const editorValueSplit = viewUpdate.state.doc.text;
           let sectionMarker = '';
           for (let i = curentLine - 1; i >= 0; i--) {
-            if (sectionMarker == '' && (editorValueSplit[i] == '__1' || editorValueSplit[i] == '__2')){
+            if (sectionMarker == '' && (editorValueSplit[i] == TEXT_SEPARATORS.user || editorValueSplit[i] == TEXT_SEPARATORS.assistant)){
               sectionMarker = editorValueSplit[i];
               break;
             }
           }
           let emptyLinesCounter = 0;
-          if (sectionMarker == '__2') {
+          if (sectionMarker == TEXT_SEPARATORS.assistant) {
             for (let i = curentLine - 1; i >= 0; i--) {
               if (editorValueSplit[i].trim() == ''){
                 emptyLinesCounter++;
@@ -155,7 +159,7 @@ const onNewLineInput = EditorView.updateListener.of(function(viewUpdate) {
             }
             if (emptyLinesCounter == 2) {
               let newEditorValueSplit = [...editorValueSplit];
-              newEditorValueSplit.splice(curentLine - 1, 0, '__1');
+              newEditorValueSplit.splice(curentLine - 1, 0, TEXT_SEPARATORS.user);
               let transaction = viewUpdate.state.update({changes: {from: 0, to: viewUpdate.state.doc.length, insert: newEditorValueSplit.join('\n')}});
               viewUpdate.view.dispatch(transaction);
             }
