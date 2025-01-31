@@ -171,7 +171,7 @@ const onNewLineInput = EditorView.updateListener.of(function(viewUpdate) {
           // console.log("Enter key has been hit");
           const currentLine = viewUpdate.state.doc.lineAt(viewUpdate.state.selection.main.from).number - 1;
           // console.log("currentLine", currentLine);
-          const editorValueSplit = viewUpdate.state.doc.text;
+          let editorValueSplit = viewUpdate.state.doc.text;
           let sectionMarker = '';
           for (let i = currentLine - 1; i >= 0; i--) {
             if (sectionMarker == '' && (editorValueSplit[i] == TEXT_SEPARATORS.user || editorValueSplit[i] == TEXT_SEPARATORS.assistant)){
@@ -189,11 +189,19 @@ const onNewLineInput = EditorView.updateListener.of(function(viewUpdate) {
               }
             }
             if (emptyLinesCounter >= 2) {
-              let newEditorValueSplit = [...editorValueSplit];
-              newEditorValueSplit.splice(currentLine, 0, TEXT_SEPARATORS.user);
-              const newEditorValue = getFormattedText(newEditorValueSplit.join('\n'));
-              let transaction = viewUpdate.state.update({changes: {from: 0, to: viewUpdate.state.doc.length, insert: newEditorValue}});
-              viewUpdate.view.dispatch(transaction);
+              let lineInfo = viewUpdate.state.doc.line(currentLine);
+              let changes = [{from: lineInfo.from, insert: TEXT_SEPARATORS.user}];
+              editorValueSplit = viewUpdate.state.doc.text;
+              for (let i = currentLine; i< editorValueSplit.length; i++) {
+                if (editorValueSplit[i] == TEXT_SEPARATORS.user) {
+                  lineInfo = viewUpdate.state.doc.line(i+1);
+                  changes.push({from: lineInfo.from, to: lineInfo.to, insert: ''});
+                  break;
+                }
+                if (editorValueSplit[i] == TEXT_SEPARATORS.assistant)
+                  break;
+              }
+              viewUpdate.view.dispatch({changes});
             }
           }
         }
