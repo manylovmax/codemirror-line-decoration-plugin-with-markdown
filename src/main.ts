@@ -209,9 +209,9 @@ const onNewLineInput = EditorView.updateListener.of(function(viewUpdate) {
   } 
 });
 
-export function setupEditor(selector) {
+export function setupEditor(selector, initialText) {
   const state = EditorState.create({
-    // doc: "__1\nприведи текст к верхнему регистру\n__2\nPELL\n___",
+    doc: initialText,
     extensions: [
       richEditor({
         markdoc: config,
