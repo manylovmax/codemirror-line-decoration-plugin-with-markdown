@@ -160,53 +160,59 @@ export function getFormattedText(textToParse: string) {
 }
 
 const onNewLineInput = EditorView.updateListener.of(function(viewUpdate) {
-  if (viewUpdate.docChanged) {
-      // console.log(viewUpdate);
-      if (viewUpdate.changes.inserted.length == 2) {
-        if (
-          viewUpdate.changes.inserted[1].lines == 2 && 
-          viewUpdate.changes.inserted[1].text[0] == '' &&
-          viewUpdate.changes.inserted[1].text[1] == ''
-        ) {
-          // console.log("Enter key has been hit");
-          const currentLine = viewUpdate.state.doc.lineAt(viewUpdate.state.selection.main.from).number - 1;
-          // console.log("currentLine", currentLine);
-          let editorValueSplit = viewUpdate.state.doc.text;
-          let sectionMarker = '';
-          for (let i = currentLine - 1; i >= 0; i--) {
-            if (sectionMarker == '' && (editorValueSplit[i] == TEXT_SEPARATORS.user || editorValueSplit[i] == TEXT_SEPARATORS.assistant)){
-              sectionMarker = editorValueSplit[i];
-              break;
-            }
-          }
-          let emptyLinesCounter = 0;
-          if (sectionMarker == TEXT_SEPARATORS.assistant) {
-            for (let i = currentLine - 1; i >= 0; i--) {
-              if (editorValueSplit[i].trim() == ''){
-                emptyLinesCounter++;
-              } else {
-                break;
-              }
-            }
-            if (emptyLinesCounter >= 2) {
-              let lineInfo = viewUpdate.state.doc.line(currentLine);
-              let changes = [{from: lineInfo.from, insert: TEXT_SEPARATORS.user}];
-              editorValueSplit = viewUpdate.state.doc.text;
-              for (let i = currentLine; i< editorValueSplit.length; i++) {
-                if (editorValueSplit[i] == TEXT_SEPARATORS.user) {
-                  lineInfo = viewUpdate.state.doc.line(i+1);
-                  changes.push({from: lineInfo.from, to: lineInfo.to, insert: ''});
-                  break;
-                }
-                if (editorValueSplit[i] == TEXT_SEPARATORS.assistant)
-                  break;
-              }
-              viewUpdate.view.dispatch({changes});
-            }
-          }
-        }
+  if (!viewUpdate.docChanged) 
+    return;
+
+  if (viewUpdate.changes.inserted.length != 2)
+    return;
+
+  if (
+    viewUpdate.changes.inserted[1].lines == 2 && 
+    viewUpdate.changes.inserted[1].text[0] == '' &&
+    viewUpdate.changes.inserted[1].text[1] == ''
+  ) {
+    // console.log("Enter key has been hit");
+    const currentLine = viewUpdate.state.doc.lineAt(viewUpdate.state.selection.main.from).number - 1;
+    // console.log("currentLine", currentLine);
+    let editorValueSplit = viewUpdate.state.doc.text;
+    let sectionMarker = '';
+    for (let i = currentLine - 1; i >= 0; i--) {
+      if (sectionMarker == '' && (editorValueSplit[i] == TEXT_SEPARATORS.user || editorValueSplit[i] == TEXT_SEPARATORS.assistant)){
+        sectionMarker = editorValueSplit[i];
+        break;
       }
-  } 
+    }
+
+    if (sectionMarker != TEXT_SEPARATORS.assistant)
+      return;
+
+    let emptyLinesCounter = 0;
+    for (let i = currentLine - 1; i >= 0; i--) {
+      if (editorValueSplit[i].trim() == '') {
+        emptyLinesCounter++;
+      } else {
+        break;
+      }
+    }
+
+    if (emptyLinesCounter < 2)
+      return;
+
+    let lineInfo = viewUpdate.state.doc.line(currentLine);
+    let changes = [{from: lineInfo.from, insert: TEXT_SEPARATORS.user}];
+
+    editorValueSplit = viewUpdate.state.doc.text;
+    for (let i = currentLine; i < editorValueSplit.length; i++) {
+      if (editorValueSplit[i] == TEXT_SEPARATORS.user) {
+        lineInfo = viewUpdate.state.doc.line(i+1);
+        changes.push({from: lineInfo.from, to: lineInfo.to, insert: ''});
+        break;
+      }
+      if (editorValueSplit[i] == TEXT_SEPARATORS.assistant)
+        break;
+    }
+    viewUpdate.view.dispatch({changes});
+  }
 });
 
 export function setupEditor(selector, initialText) {
