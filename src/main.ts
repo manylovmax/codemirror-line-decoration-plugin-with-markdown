@@ -128,35 +128,33 @@ const lineEndDecoratorPlugin = ViewPlugin.fromClass(class {
     })
 });
 
-export function getFormattedText(textToParse: string) {
+export function formatText(editorView: EditorView) {
   // добавление тега user
-  let resultTextSplit: string[] = [];
-  let textToParseSplit: string[] = textToParse.split('\n');
+  let updatesToDispatch: object[] = [];
+  let textToParseSplit: string[] = editorView.state.doc.text;
   if (textToParseSplit[0] != TEXT_SEPARATORS.user && textToParseSplit[0] != TEXT_SEPARATORS.assistant) {
-    resultTextSplit.push(TEXT_SEPARATORS.user);// tag user
+    updatesToDispatch.push({from: 0, insert: TEXT_SEPARATORS.user + "\n"});// tag user
   }
-  resultTextSplit = resultTextSplit.concat(textToParseSplit);
   // уборка дублирующих тегов (слитие нескольких смежных сообщений одного типа в одно)
-  textToParseSplit = resultTextSplit;
   let currentTag: string = '';
-  resultTextSplit = [];
+  let lineInfo = {};
   for (let i = 0; i < textToParseSplit.length; i++) {
-      if (textToParseSplit[i] == TEXT_SEPARATORS.user) {
-          if (currentTag == TEXT_SEPARATORS.user) {
-              continue;
-          }
-          currentTag = textToParseSplit[i];
-      }
-      if (textToParseSplit[i] == TEXT_SEPARATORS.assistant) {
-          if (currentTag == TEXT_SEPARATORS.assistant) {
-              continue;
-          }
-          currentTag = textToParseSplit[i];
-      }
-      resultTextSplit.push(textToParseSplit[i]);
+    if (textToParseSplit[i] == TEXT_SEPARATORS.user) {
+        if (currentTag == TEXT_SEPARATORS.user) {
+          lineInfo = editorView.state.doc.line(i+1);
+          updatesToDispatch.push({from: lineInfo.from, to: lineInfo.to, insert: ""});
+        }
+        currentTag = textToParseSplit[i];
+    }
+    if (textToParseSplit[i] == TEXT_SEPARATORS.assistant) {
+        if (currentTag == TEXT_SEPARATORS.assistant) {
+          lineInfo = editorView.state.doc.line(i+1);
+          updatesToDispatch.push({from: lineInfo.from, to: lineInfo.to, insert: ""});
+        }
+        currentTag = textToParseSplit[i];
+    }
   }
-
-  return resultTextSplit.join('\n');
+  editorView.dispatch({changes: updatesToDispatch});
 }
 
 const onNewLineInput = EditorView.updateListener.of(function(viewUpdate) {
@@ -256,8 +254,4 @@ export function setEditorValue(editorView, newValue) {
 
 export function getEditorSelection(editorView) {
   return editorView.state.sliceDoc(editorView.state.selection.main.from, editorView.state.selection.main.to);
-}
-
-export function getEditorCursorPosition(editorView) {
-  return editorView.state.selection.main.head;
 }

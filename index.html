@@ -41,14 +41,14 @@
     </style>
     <div id="editor-wrapper"></div>
     <script type="module">
-      import {setupEditor, getEditorValue, setEditorValue, getEditorSelection, getEditorCursorPosition, getFormattedText} from '/src/main.ts';
-      window.wvCodemirror6 = {};
-      window.wvCodemirror6.setupEditor = setupEditor;
-      window.wvCodemirror6.getEditorValue = getEditorValue;
-      window.wvCodemirror6.setEditorValue = setEditorValue;
-      window.wvCodemirror6.getEditorSelection = getEditorSelection;
-      window.wvCodemirror6.getEditorCursorPosition = getEditorCursorPosition;
-      window.wvCodemirror6.getFormattedText = getFormattedText;
+      import {setupEditor, getEditorValue, setEditorValue, getEditorSelection, formatText} from '/src/main.ts';
+      window.wvCodemirror6 = {
+        setupEditor,
+        getEditorValue,
+        setEditorValue,
+        getEditorSelection,
+        formatText
+      };
 
       // setupEditor("#editor-wrapper");
     </script> 
