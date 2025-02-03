@@ -1,4 +1,4 @@
-import { EditorState } from '@codemirror/state'
+import { EditorState, Line } from '@codemirror/state'
 import { keymap, EditorView, drawSelection, highlightActiveLine, MatchDecorator, WidgetType, Decoration, ViewPlugin } from '@codemirror/view'
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
 import { defaultHighlightStyle, syntaxHighlighting, indentOnInput } from '@codemirror/language'
@@ -137,7 +137,7 @@ export function formatText(editorView: EditorView) {
   }
   // уборка дублирующих тегов (слитие нескольких смежных сообщений одного типа в одно)
   let currentTag: string = '';
-  let lineInfo = {};
+  let lineInfo: Line;
   for (let i = 0; i < textToParseSplit.length; i++) {
     if (textToParseSplit[i] == TEXT_SEPARATORS.user) {
         if (currentTag == TEXT_SEPARATORS.user) {
