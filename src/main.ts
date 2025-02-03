@@ -131,7 +131,7 @@ const lineEndDecoratorPlugin = ViewPlugin.fromClass(class {
 export function formatText(editorView: EditorView) {
   // добавление тега user
   let updatesToDispatch: object[] = [];
-  let textToParseSplit: string[] = editorView.state.doc.text;
+  let textToParseSplit: string[] = editorView.state.doc.toJSON();
   if (textToParseSplit[0] != TEXT_SEPARATORS.user && textToParseSplit[0] != TEXT_SEPARATORS.assistant) {
     updatesToDispatch.push({from: 0, insert: TEXT_SEPARATORS.user + "\n"});// tag user
   }
@@ -172,7 +172,7 @@ const onNewLineInput = EditorView.updateListener.of(function(viewUpdate) {
     // console.log("Enter key has been hit");
     const currentLine = viewUpdate.state.doc.lineAt(viewUpdate.state.selection.main.from).number - 1;
     // console.log("currentLine", currentLine);
-    let editorValueSplit = viewUpdate.state.doc.text;
+    let editorValueSplit = viewUpdate.state.doc.toJSON();
     let sectionMarker = '';
     for (let i = currentLine - 1; i >= 0; i--) {
       if (sectionMarker == '' && (editorValueSplit[i] == TEXT_SEPARATORS.user || editorValueSplit[i] == TEXT_SEPARATORS.assistant)){
@@ -199,7 +199,7 @@ const onNewLineInput = EditorView.updateListener.of(function(viewUpdate) {
     let lineInfo = viewUpdate.state.doc.line(currentLine);
     let changes = [{from: lineInfo.from, insert: TEXT_SEPARATORS.user}];
 
-    editorValueSplit = viewUpdate.state.doc.text;
+    editorValueSplit = viewUpdate.state.doc.toJSON();
     for (let i = currentLine; i < editorValueSplit.length; i++) {
       if (editorValueSplit[i] == TEXT_SEPARATORS.user) {
         lineInfo = viewUpdate.state.doc.line(i+1);
