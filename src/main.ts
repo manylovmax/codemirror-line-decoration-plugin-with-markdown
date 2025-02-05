@@ -13,11 +13,11 @@ import config from './codemirror-rich-markdoc/example/markdoc';
 // import doc from './codemirror-rich-markdoc/example/example.md?raw';
 
 const TEXT_SEPARATORS = {
-  user: '__1',
-  assistant: '__2',
+  user: '__user',
+  assistant: '__assistant',
 }
 
-class lineAnswerWidget extends WidgetType {
+class lineAssistantSectionWidget extends WidgetType {
   toDOM() {
     let wrap = document.createElement("span");
     wrap.className = "cm-line-decorator";
@@ -34,7 +34,7 @@ class lineAnswerWidget extends WidgetType {
   ignoreEvent() { return false }
 };
 
-class lineTaskWidget extends WidgetType {
+class lineUserSectionWidget extends WidgetType {
   toDOM() {
     let wrap = document.createElement("span");
     wrap.className = "cm-line-decorator";
@@ -50,46 +50,28 @@ class lineTaskWidget extends WidgetType {
 
   ignoreEvent() { return false }
 };
-class lineEndWidget extends WidgetType {
-  toDOM() {
-    let wrap = document.createElement("span");
-    wrap.className = "cm-line-decorator";
-    let child = document.createElement("span");
-    child.className = "cm-line-decorator__split-line-end";
-    wrap.appendChild(child);
-    return wrap;
-  }
 
-  ignoreEvent() { return false }
-};
-
-const lineTaskMatcher = new MatchDecorator({
-  regexp: /__1/g,
+const lineUserSeparatorMatcher = new MatchDecorator({
+  regexp: /__user/g,
   decoration: match => Decoration.replace({
-    widget: new lineTaskWidget(match[1]),
+    widget: new lineUserSectionWidget(match[1]),
   })
 });
 
-const lineAnswerMatcher = new MatchDecorator({
-  regexp: /__2/g,
+const lineAssistantSeparatorMatcher = new MatchDecorator({
+  regexp: /__assistant/g,
   decoration: match => Decoration.replace({
-    widget: new lineAnswerWidget(match[1]),
-  })
-});
-const lineEndMatcher = new MatchDecorator({
-  regexp: /___/g,
-  decoration: match => Decoration.replace({
-    widget: new lineEndWidget(match[1]),
+    widget: new lineAssistantSectionWidget(match[1]),
   })
 });
 
-const lineTaskDecoratorPlugin = ViewPlugin.fromClass(class {
+const lineUserSectionDecoratorPlugin = ViewPlugin.fromClass(class {
     lines
     constructor(view) {
-      this.lines = lineTaskMatcher.createDeco(view)
+      this.lines = lineUserSeparatorMatcher.createDeco(view)
     }
     update(update) {
-      this.lines = lineTaskMatcher.updateDeco(update, this.lines)
+      this.lines = lineUserSeparatorMatcher.updateDeco(update, this.lines)
     }
   }, {
     decorations: instance => instance.lines,
@@ -98,28 +80,13 @@ const lineTaskDecoratorPlugin = ViewPlugin.fromClass(class {
     })
 });
 
-const lineAnswerDecoratorPlugin = ViewPlugin.fromClass(class {
+const lineAssistantSectionDecoratorPlugin = ViewPlugin.fromClass(class {
     lines
     constructor(view) {
-      this.lines = lineAnswerMatcher.createDeco(view)
+      this.lines = lineAssistantSeparatorMatcher.createDeco(view)
     }
     update(update) {
-      this.lines = lineAnswerMatcher.updateDeco(update, this.lines)
-    }
-  }, {
-    decorations: instance => instance.lines,
-    provide: plugin => EditorView.atomicRanges.of(view => {
-      return view.plugin(plugin)?.lines || Decoration.none
-    })
-});
-
-const lineEndDecoratorPlugin = ViewPlugin.fromClass(class {
-    lines
-    constructor(view) {
-      this.lines = lineEndMatcher.createDeco(view)
-    }
-    update(update) {
-      this.lines = lineEndMatcher.updateDeco(update, this.lines)
+      this.lines = lineAssistantSeparatorMatcher.updateDeco(update, this.lines)
     }
   }, {
     decorations: instance => instance.lines,
@@ -231,9 +198,8 @@ export function setupEditor(selector, initialText) {
       indentOnInput(),
       syntaxHighlighting(defaultHighlightStyle),
       keymap.of([indentWithTab, ...defaultKeymap, ...historyKeymap]),
-      lineTaskDecoratorPlugin, 
-      lineAnswerDecoratorPlugin, 
-      lineEndDecoratorPlugin,
+      lineUserSectionDecoratorPlugin, 
+      lineAssistantSectionDecoratorPlugin, 
       onNewLineInput
     ],
   });
